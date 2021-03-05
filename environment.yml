@@ -18,11 +18,14 @@ dependencies:
   - pymatgen==2020.12.31
   - modal==0.4.*
 #  - tensorflow>2
+  - pytorch>=0.4.1
   - jedi<0.18  # 0.18 currently incompatible with Jupyter
   - tqdm
   - jupyterlab
   - psutil
   - pytest
+  - tensorboardX
+  - h5py
   - pip
   - pip:
     - git+https://github.com/atomistic-machine-learning/schnetpack.git@master
