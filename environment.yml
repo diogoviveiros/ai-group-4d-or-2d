@@ -29,4 +29,3 @@ dependencies:
     - dscribe==0.4.0
     - matminer==0.6.*
     - tensorflow>2
-    - pybel==0.15.*
