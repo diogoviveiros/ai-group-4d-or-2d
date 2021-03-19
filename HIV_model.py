@@ -57,7 +57,7 @@ schnet = spk.representation.SchNet(
 #                                   mean=means[QM9.U0], stddev=stddevs[QM9.U0])
 output = spk.atomistic.Atomwise(n_in=30, property='HIV_active')
 
-spk.AtomisticModel(representation=schnet, output_modules=output)
+model = spk.AtomisticModel(representation=schnet, output_modules=output)
 
 def mse_loss(batch, result):
     diff = batch['HIV_active']-result['HIV_active']
@@ -94,6 +94,8 @@ trainer = trn.Trainer(
     validation_loader=val_loader,
 )
 
-device = "cuda" # change to 'cpu' if gpu is not available, change to cuda if gpu is
+device = "cpu" # change to 'cpu' if gpu is not available, change to cuda if gpu is
 n_epochs = 25 # takes about 10 min on a notebook GPU. reduces for playing around
+
+print('training')
 trainer.train(device=device, n_epochs=n_epochs)
