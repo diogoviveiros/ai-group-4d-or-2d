@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import schnetpack.train as trn
 from schnetpack import AtomsData
 import torch
+from sklearn.model_selection import KFold
 
 
 freesolv_file = 'data/FreeSolv_with_3D.csv'
@@ -118,7 +119,7 @@ kfold = KFold(n_splits=k,shuffle=True)
 for fold, (train_ids, val_ids) in enumerate(kfold.split(new_dataset)):
 #print('train: %s, test: %s' % (data[train], data[test]))
     
-    print('train: %s, test: %s' %(train_ids,test_ids))
+    print('train: %s, test: %s' %(train_ids,val_ids))
         
     train_data = new_dataset.create_subset(train_ids)
     val_data = new_dataset.create_subset(val_ids)
@@ -154,7 +155,7 @@ for fold, (train_ids, val_ids) in enumerate(kfold.split(new_dataset)):
     ]
 
     trainer = trn.Trainer(
-        model_path=hivmod,
+        model_path=freesolvmod,
         model=model,
         hooks=hooks,
         loss_fn=loss,
