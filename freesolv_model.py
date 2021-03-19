@@ -12,7 +12,7 @@ from schnetpack import AtomsData
 import torch
 
 
-freesolv_file = 'data/freesolv.csv'
+freesolv_file = 'data/FreeSolv_with_3D.csv'
 freesolv_data = pd.read_csv(freesolv_file)
 
 freesolvmod = "./FreeSolvModel"
@@ -38,8 +38,8 @@ new_dataset.add_systems(atoms, property_list)
 
 train, val, test = spk.train_test_split(
         data=new_dataset,
-        num_train=1000,
-        num_val=500,
+        num_train=500,
+        num_val=100,
         split_file=os.path.join(freesolvmod, "freesolv_split.npz"),
     )
 
@@ -57,7 +57,7 @@ schnet = spk.representation.SchNet(
 #                                   mean=means[QM9.U0], stddev=stddevs[QM9.U0])
 output = spk.atomistic.Atomwise(n_in=30, property='expt')
 
-spk.AtomisticModel(representation=schnet, output_modules=output)
+model = spk.AtomisticModel(representation=schnet, output_modules=output)
 
 def mse_loss(batch, result):
     diff = batch['expt']-result['expt']
