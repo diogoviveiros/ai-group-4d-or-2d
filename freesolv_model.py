@@ -94,6 +94,6 @@ trainer = trn.Trainer(
     validation_loader=val_loader,
 )
 
-device = "cuda" # change to 'cpu' if gpu is not available, change to cuda if gpu is
+device = "cpu" # change to 'cpu' if gpu is not available, change to cuda if gpu is
 n_epochs = 25 # takes about 10 min on a notebook GPU. reduces for playing around
 trainer.train(device=device, n_epochs=n_epochs)
