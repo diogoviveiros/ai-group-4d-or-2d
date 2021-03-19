@@ -22,18 +22,18 @@ if not os.path.exists('FreeSolvModel'):
 atoms = freesolv_data['xyz'].map(lambda x: next(read_xyz(StringIO(x), slice(None))))
 atoms = [a for a in atoms]
 
-freesolv_calc = np.array(freesolv_data["calc"])
+freesolv_expt = np.array(freesolv_data["expt"])
 
 property_list = []
-for f in freesolv_calc:
+for f in freesolv_expt:
     
     property_list.append(
-        {'calc': float(f)}
+        {'expt': float(f)}
     )
 
 print('Properties:', property_list)
 
-new_dataset = AtomsData(os.path.join(freesolvmod, 'FreeSolv_SchNet_dataset.db'), available_properties=['calc'])
+new_dataset = AtomsData(os.path.join(freesolvmod, 'FreeSolv_SchNet_dataset.db'), available_properties=['expt'])
 new_dataset.add_systems(atoms, property_list)
 
 train, val, test = spk.train_test_split(
@@ -55,12 +55,12 @@ schnet = spk.representation.SchNet(
 #NOTE --- NEED TO CHANGE THIS FROM QM9
 #output = spk.atomistic.Atomwise(n_in=30, atomref=atomrefs[QM9.U0], property='HIV_active',
 #                                   mean=means[QM9.U0], stddev=stddevs[QM9.U0])
-output = spk.atomistic.Atomwise(n_in=30, property='calc')
+output = spk.atomistic.Atomwise(n_in=30, property='expt')
 
 spk.AtomisticModel(representation=schnet, output_modules=output)
 
 def mse_loss(batch, result):
-    diff = batch['calc']-result['calc']
+    diff = batch['expt']-result['expt']
     err_sq = torch.mean(diff ** 2)
     return err_sq
 
@@ -72,9 +72,9 @@ optimizer = Adam(model.parameters(), lr=1e-2)
 # %rm -r ./HIVModel/checkpoints
 # %rm -r ./HIVModel/log.csv
 
-loss = trn.build_mse_loss(['calc'])
+loss = trn.build_mse_loss(['expt'])
 
-metrics = [spk.metrics.MeanAbsoluteError('calc')]
+metrics = [spk.metrics.MeanAbsoluteError('expt')]
 hooks = [
     trn.CSVHook(log_path=freesolvmod, metrics=metrics),
     trn.ReduceLROnPlateauHook(
