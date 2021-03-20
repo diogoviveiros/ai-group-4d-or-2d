@@ -38,6 +38,18 @@ new_dataset = AtomsData(os.path.join(freesolvmod, 'FreeSolv_SchNet_dataset.db'),
 new_dataset.add_systems(atoms, property_list)
 
 
+print('Number of reference calculations:', len(new_dataset))
+print('Available properties:')
+
+for p in new_dataset.available_properties:
+    print('-', p)
+print()
+
+example = new_dataset[0]
+print('Properties of molecule with id 0:')
+
+for k, v in example.items():
+    print('-', k, ':', v.shape)
 
 
 train, val, test = spk.train_test_split(
