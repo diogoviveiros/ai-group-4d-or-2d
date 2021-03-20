@@ -45,13 +45,13 @@ repeat_results['train_losses']=[]
 repeat_results['val_losses']=[]
 repeat_results['val_maes']=[]
 
-for i in repeats:
-
+for i in range(repeats):
+    print('repeating')
     train, val, test = spk.train_test_split(
             data=new_dataset,
-            num_train=100,
+            num_train=500,
             num_val=100,
-            split_file=os.path.join(freesolvmod, "freesolv_split.npz"),
+            split_file=None#os.path.join(freesolvmod, "freesolv_split.npz"),
         )
 
     train_loader = spk.AtomsLoader(train, batch_size=100, shuffle=True)
@@ -85,6 +85,9 @@ for i in repeats:
 
     loss = trn.build_mse_loss(['expt'])
 
+    metrics = [spk.metrics.MeanAbsoluteError('expt')]
+
+
     hooks = [
         trn.CSVHook(log_path=freesolvmod, metrics=metrics),
         trn.ReduceLROnPlateauHook(
@@ -107,8 +110,9 @@ for i in repeats:
     device = "cpu" # change to 'cpu' if gpu is not available, change to cuda if gpu is
     n_epochs = 25 # takes about 10 min on a notebook GPU. reduces for playing around
 
+    print('training')
     trainer.train(device=device, n_epochs=n_epochs)
-        
+    print('finished training')    
     results = np.loadtxt(os.path.join(freesolvmod, 'log.csv'), skiprows=1, delimiter=',')
     
     learning_rate = results[:,1]
@@ -121,8 +125,8 @@ for i in repeats:
     repeat_results['train_losses'].append(train_loss)
     repeat_results['val_losses'].append(val_loss)
     repeat_results['val_maes'].append(val_mae)
-
-repeat_results = pd.Dataframe(data=kfold_results)
+    print('saved results')
+repeat_results = pd.DataFrame(data=repeat_results)
 repeat_results.to_csv('freesolv_kfold_results.csv')
 #FREESOLV VERSION OF KFOLD
 #kfold_results= {}
