@@ -43,8 +43,8 @@ train, val, test = spk.train_test_split(
         split_file=os.path.join(hivmod, "split.npz"),
     )
 
-train_loader = spk.AtomsLoader(train, batch_size=100, shuffle=True)
-val_loader = spk.AtomsLoader(val, batch_size=100)
+train_loader = spk.AtomsLoader(train, batch_size=32, shuffle=True)
+val_loader = spk.AtomsLoader(val, batch_size=32)
 
 schnet = spk.representation.SchNet(
     n_atom_basis=30, n_filters=30, n_gaussians=20, n_interactions=5,
@@ -64,6 +64,25 @@ def mse_loss(batch, result):
     err_sq = torch.mean(diff ** 2)
     return err_sq
 
+def build_BinaryCrossEntropy_loss(*args):
+    BCEL = torch.nn.BCELoss(*args)
+    
+    def adapted_BCE(batch, results):
+        return BCEL(batch['HIV_active'], result['HIV_active'])
+    
+    return adapted_BCE
+                    
+def build_BinaryCrossEntropy_with_Sigmoid_loss(scale=15.0, *args):
+    BCEL = torch.nn.BCELoss(*args)
+    
+    def adapted_BCE_with_Sigmoid(batch, results):
+        prep_batch = batch['HIV_active'].sub(0.5).multiply(scale)
+        prep_result = result['HIV_active'].sub(0.5).multiply(scale)
+        sig_batch, sig_result = torch.nn.Sigmoid(prep_batch, prep_result)
+        return BCEL(sig_batch, sig_result)
+    
+    return adapted_BCE_with_Sigmoid
+
 # build optimizer
 optimizer = Adam(model.parameters(), lr=1e-2)
 
@@ -73,6 +92,8 @@ optimizer = Adam(model.parameters(), lr=1e-2)
 # %rm -r ./HIVModel/log.csv
 
 loss = trn.build_mse_loss(['HIV_active'])
+# loss = build_BinaryCrossEntropy_loss()
+# loss = build_BinaryCrossEntropy_with_Sigmoid_loss(15.0)
 
 metrics = [spk.metrics.MeanAbsoluteError('HIV_active')]
 hooks = [
@@ -95,7 +116,7 @@ trainer = trn.Trainer(
 )
 
 device = "cpu" # change to 'cpu' if gpu is not available, change to cuda if gpu is
-n_epochs = 25 # takes about 10 min on a notebook GPU. reduces for playing around
+n_epochs = 1 # takes about 10 min on a notebook GPU. reduces for playing around
 
 print('training')
 trainer.train(device=device, n_epochs=n_epochs)
